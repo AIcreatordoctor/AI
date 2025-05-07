@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Калькулятор HOMA-IR</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f6f9;
+      color: #333;
+    }
+    .calculator {
+      max-width: 600px;
+      margin: 2rem auto;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      font-size: 1.75rem;
+      color: #007bff;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      margin-top: 0.25rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .buttons {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    button {
+      flex: 1;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+    }
+    .calculate { background: #007bff; color: white; }
+    .reset { background: #f1f1f1; }
+    .result {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border-radius: 12px;
+      display: none;
+    }
+    .green { background: #d4edda; }
+    .yellow { background: #fff3cd; }
+    .red { background: #f8d7da; }
+    .blue { background: #d1ecf1; }
+    .result h2 { margin-top: 0; }
+    .export-btn {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      background: #333;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+    }
+    footer {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.85rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <section class="calculator">
+    <h1>HOMA-IR: Индекс инсулинорезистентности</h1>
+    <form id="homaForm">
+      <label for="glucose">Глюкоза натощак (ммоль/л)</label>
+      <input type="number" id="glucose" step="0.1" min="3" max="20" required>
+
+      <label for="insulin">Инсулин натощак (мкЕд/мл)</label>
+      <input type="number" id="insulin" step="0.1" min="1" max="100" required>
+
+      <div class="buttons">
+        <button type="submit" class="calculate">Рассчитать</button>
+        <button type="button" class="reset" onclick="resetForm()">Очистить</button>
+      </div>
+    </form>
+
+    <div class="result" id="resultBox">
+      <h2 id="homaResult"></h2>
+      <p id="interpretation"></p>
+      <button class="export-btn" onclick="exportToPDF()">Скачать PDF</button>
+    </div>
+
+    <footer>
+      Источники: Matthews et al., Diabetologia, 1985. Минздрав РФ, 2023.
+    </footer>
+  </section>
+
+  <script>
+    const form = document.getElementById('homaForm');
+    const resultBox = document.getElementById('resultBox');
+    const homaResult = document.getElementById('homaResult');
+    const interpretation = document.getElementById('interpretation');
+
+    let glucoseValue = 0;
+    let insulinValue = 0;
+    let homaValue = "";
+    let pdfInterpretation = "";
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const glucose = parseFloat(document.getElementById('glucose').value);
+      const insulin = parseFloat(document.getElementById('insulin').value);
+
+      if (isNaN(glucose) || isNaN(insulin)) return;
+      glucoseValue = glucose;
+      insulinValue = insulin;
+
+      const homa = (insulin * glucose) / 22.5;
+      homaValue = homa.toFixed(2);
+      homaResult.textContent = `Ваш HOMA-IR: ${homaValue}`;
+
+      resultBox.style.display = 'block';
+      resultBox.className = 'result';
+
+      if (homa < 1.0) {
+        interpretation.innerHTML = "HOMA-IR < 1.0 — возможна гипоинсулинемия. Рассмотрите нарушение функции β-клеток или СД 1 типа.";
+        pdfInterpretation = "HOMA-IR < 1.0 — Possible hypoinsulinemia. Consider beta-cell dysfunction or type 1 diabetes.";
+        resultBox.classList.add('blue');
+      } else if (homa <= 2.5) {
+        interpretation.innerHTML = "Норма (1.0–2.5). При наличии симптомов — дополнительная нагрузочная диагностика.";
+        pdfInterpretation = "Normal (1.0–2.5). If clinical signs present, consider further testing (e.g., OGTT).";
+        resultBox.classList.add('green');
+      } else if (homa <= 3.9) {
+        interpretation.innerHTML = "Умеренное повышение (2.6–3.9). Возможна инсулинорезистентность при МС, СПКЯ, НАЖБП.";
+        pdfInterpretation = "Mild elevation (2.6–3.9). Likely insulin resistance in metabolic syndrome, PCOS, or NAFLD.";
+        resultBox.classList.add('yellow');
+      } else {
+        interpretation.innerHTML = "Значительное повышение (≥ 4.0). Высокий риск СД 2 типа. Рекомендуется немедленная коррекция.";
+        pdfInterpretation = "Significant elevation (≥ 4.0). High risk of type 2 diabetes. Lifestyle changes and therapy needed.";
+        resultBox.classList.add('red');
+      }
+    });
+
+    function resetForm() {
+      form.reset();
+      resultBox.style.display = 'none';
+      resultBox.className = 'result';
+      homaResult.textContent = '';
+      interpretation.textContent = '';
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFont('helvetica');
+      doc.setFontSize(16);
+      doc.text("HOMA-IR CALCULATOR", 20, 20);
+
+      doc.setFontSize(12);
+      doc.text("Input Data:", 20, 35);
+      doc.text(`- Fasting Glucose: ${glucoseValue} mmol/L`, 20, 45);
+      doc.text(`- Fasting Insulin: ${insulinValue} µU/mL`, 20, 55);
+
+      doc.text("Result:", 20, 70);
+      doc.text(`- HOMA-IR: ${homaValue}`, 20, 80);
+
+      doc.text("Interpretation:", 20, 95);
+      doc.text(pdfInterpretation, 20, 105, { maxWidth: 170 });
+
+      doc.line(20, 125, 190, 125);
+      doc.text("Sources:", 20, 135);
+      doc.text("Matthews et al., Diabetologia, 1985", 20, 142);
+      doc.text("Ministry of Health, Russia, 2023", 20, 149);
+
+      doc.save("homa-ir.pdf");
+    }
+  </script>
+</body>
+</html>
