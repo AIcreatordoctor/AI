@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TextToDoc — Врач в кармане</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background-color: #f5f5f7;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      background-color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 1rem;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.5rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .main {
+      padding: 1rem;
+      flex: 1;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(90deg, #1d3c78, #3f74da);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: scale(1.02);
+    }
+
+    .section-title {
+      margin-top: 1.5rem;
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+
+    .cards {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      flex: 1;
+      min-width: 30%;
+      background: #f0f0f0;
+      border-radius: 10px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+    }
+
+    .chat-card, .diary-entry {
+      background-color: #f7f8fa;
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .chat-card small {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .badge {
+      background-color: #28c76f;
+      color: white;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      margin-left: 8px;
+    }
+
+    .chat-btn {
+      background-color: #1d3c78;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 0.5rem;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+    }
+
+    .chat-btn:hover {
+      background-color: #174080;
+    }
+
+    footer {
+      border-top: 1px solid #ddd;
+      display: flex;
+      justify-content: space-around;
+      padding: 0.75rem 0;
+      background: #fff;
+    }
+
+    footer a {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #555;
+      text-decoration: none;
+    }
+
+    footer a.active {
+      color: #1d3c78;
+      font-weight: bold;
+    }
+
+    @media (min-width: 600px) {
+      .container {
+        border-radius: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>TextToDoc</header>
+    <div class="main">
+      <button class="btn" onclick="goToChat()">Написать врачу</button>
+
+      <div class="section-title">Показатели за сутки</div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">❤️</div>
+          <div class="card-title">Пульс</div>
+          <div>72 уд/мин</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌙</div>
+          <div class="card-title">Сон</div>
+          <div>7 ч 15 мин</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔥</div>
+          <div class="card-title">Активность</div>
+          <div>435 ккал</div>
+        </div>
+      </div>
+
+      <div class="section-title">Мои обращения</div>
+      <div class="chat-card">
+        <div><strong>Здравствуйте!</strong> <span class="badge">ПЕРЕДАНО</span></div>
+        <small>Такие симптомы часто связаны с вирусной инфекцией...</small>
+        <div>
+          <a class="chat-btn" href="https://aicreatordoctor.github.io/AI/texttodoc.html" target="_blank">Открыть чат</a>
+        </div>
+      </div>
+
+      <div class="section-title">Дневник здоровья</div>
+      <div class="diary-entry">
+        Температура 37.6, слабость. Принимал парацетамол. Самочувствие лучше.
+        <div><a class="chat-btn" href="#">Перейти</a></div>
+      </div>
+    </div>
+
+    <footer>
+      <a href="#" class="active">🏠<br>Главная</a>
+      <a href="https://aicreatordoctor.github.io/AI/texttodoc.html" target="_blank">💬<br>Чат</a>
+      <a href="#">📔<br>Дневник</a>
+      <a href="#">⚙️<br>Профиль</a>
+    </footer>
+  </div>
+
+  <script>
+    function goToChat() {
+      window.open("https://aicreatordoctor.github.io/AI/texttodoc.html", "_blank");
+    }
+  </script>
+</body>
+</html>
