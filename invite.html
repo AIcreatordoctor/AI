@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Сюрприз для коллеги</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #5fe67b;
+      --bg: #f8fafc;
+      --shadow: 0 6px 32px 0 rgba(60, 80, 90, 0.15);
+      --radius: 24px;
+    }
+    body {
+      margin: 0;
+      font-family: 'Montserrat', Arial, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.5s;
+    }
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem 2rem;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      transition: box-shadow 0.3s, background 0.5s;
+      position: relative;
+      overflow: hidden;
+      animation: floatCard 3s ease-in-out infinite alternate;
+    }
+    @keyframes floatCard {
+      from { transform: translateY(0);}
+      to { transform: translateY(-10px);}
+    }
+    .emoji {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      transition: transform 0.5s cubic-bezier(.17,.67,.83,.67);
+      display: block;
+      will-change: transform;
+      animation: popEmoji 1.5s cubic-bezier(.17,.67,.83,.67) infinite alternate;
+    }
+    @keyframes popEmoji {
+      from { transform: scale(1);}
+      to { transform: scale(1.13) rotate(-8deg);}
+    }
+    .card input[type="text"] {
+      font-size: 1.1rem;
+      padding: 0.8rem 1rem;
+      border-radius: 1.5rem;
+      border: 1px solid #e0e0e0;
+      width: 80%;
+      margin-bottom: 1.5rem;
+      outline: none;
+      transition: border .2s;
+      box-shadow: 0 2px 12px 0 rgba(95,230,123,.05);
+    }
+    .card input[type="text"]:focus {
+      border: 1.5px solid var(--accent);
+    }
+    .card button {
+      background: var(--accent);
+      color: #222;
+      font-weight: 700;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 2rem;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background .2s, transform .1s;
+      box-shadow: 0 2px 12px 0 rgba(95,230,123,.15);
+    }
+    .card button:hover {
+      background: #43d86c;
+      transform: translateY(-2px) scale(1.05);
+    }
+    .fade-out {
+      animation: fadeOutUp 0.6s cubic-bezier(.17,.67,.83,.67) forwards;
+    }
+    .fade-in {
+      animation: fadeInDown 0.7s cubic-bezier(.17,.67,.83,.67) forwards;
+    }
+    @keyframes fadeOutUp {
+      0% { opacity: 1; transform: translateY(0);}
+      100% { opacity: 0; transform: translateY(-60px);}
+    }
+    @keyframes fadeInDown {
+      0% { opacity: 0; transform: translateY(60px);}
+      100% { opacity: 1; transform: translateY(0);}
+    }
+    .img-lunch {
+      width: 90%;
+      border-radius: 18px;
+      box-shadow: 0 4px 18px 0 rgba(60,80,90,.13);
+      margin-top: 20px;
+      transition: filter 0.5s;
+      will-change: filter;
+    }
+    .img-lunch:hover {
+      filter: brightness(1.10) saturate(1.25);
+    }
+    @media (max-width: 600px) {
+      .card {
+        padding: 2rem 0.7rem;
+        max-width: 97vw;
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="mainCard">
+    <span class="emoji" id="emojiStart">📝</span>
+    <div id="step1">
+      <h2>Кто сегодня зашёл?</h2>
+      <input type="text" id="nameInput" placeholder="Введите своё имя..." autocomplete="off" maxlength="32" />
+      <br>
+      <button id="goBtn">Далее</button>
+    </div>
+    <div id="step2" style="display:none;">
+      <span class="emoji" id="emojiSurprise"></span>
+      <h2 id="inviteHeader"></h2>
+      <p id="inviteText"></p>
+      <img id="imgLunch" class="img-lunch" src="" alt="Обед">
+    </div>
+  </div>
+  <script>
+    // Набор ярких эмодзи еды
+    const lunchEmojis = ["🍣", "🍕", "🥗", "🍔", "🥟", "🍜", "🍤", "🍱", "🍝", "🌮", "🥑", "🍩"];
+    // Картинки на выбор
+    const lunchPics = [
+      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80",
+      "https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80"
+    ];
+    // Современные шуточные приглашения
+    function coolInvites(name) {
+      return [
+        `Срочное сообщение! ${name}, твой рабочий стол скучает — пора зарядить его энергией ланча 🍽️`,
+        `Тише едешь — дальше будешь, но сейчас главное: где обедать будем, ${name}?`,
+        `День без обеда — ошибка компиляции! ${name}, не тормози, пообедаем?`,
+        `${name}, экстренное обновление: обед доступен только сегодня и только для топовых сотрудников!`,
+        `Поступил заказ на ${name}: требуется совместный обед и обмен шутками.`,
+        `Режим "Голоден" активирован. ${name}, ты в команде спасения обеда?`,
+        `Хватит создавать таски, пора создавать тосты! ${name}, летим в столовку?`,
+        `Ты — мой любимый сосед по клавиатуре! ${name}, пойдём делить котлету пополам?`,
+        `Пора выйти из Zoom-а... и войти в буфет! ${name}, берём курс на обед.`,
+        `Знаешь, почему в обед нет совещаний? Потому что лучшие коллеги едят вместе! ${name}, погнали?`
+      ];
+    }
+
+    function random(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Рандомизация цвета карточки для эффекта свежести
+    function randomAccent() {
+      const colors = [
+        "#5fe67b", "#79e0e3", "#ffd972", "#ff90b3", "#9bb1fe"
+      ];
+      return random(colors);
+    }
+
+    const goBtn = document.getElementById('goBtn');
+    const nameInput = document.getElementById('nameInput');
+    const step1 = document.getElementById('step1');
+    const step2 = document.getElementById('step2');
+    const mainCard = document.getElementById('mainCard');
+    const inviteHeader = document.getElementById('inviteHeader');
+    const inviteText = document.getElementById('inviteText');
+    const emojiSurprise = document.getElementById('emojiSurprise');
+    const imgLunch = document.getElementById('imgLunch');
+
+    goBtn.onclick = function() {
+      const name = nameInput.value.trim() || 'Коллега';
+      // Немного магии цвета
+      document.documentElement.style.setProperty('--accent', randomAccent());
+      // Плавная подсветка карточки при смене
+      mainCard.style.background = "linear-gradient(135deg, #fff 85%, " + randomAccent() + " 100%)";
+
+      // Эффект исчезновения
+      step1.classList.add('fade-out');
+      setTimeout(() => {
+        step1.style.display = 'none';
+        // Случайная emoji еды
+        emojiSurprise.innerText = random(lunchEmojis);
+        // Случайная картинка еды
+        imgLunch.src = random(lunchPics);
+        step2.style.display = 'block';
+        step2.classList.add('fade-in');
+        inviteHeader.innerHTML = `🌟 Сюрприз, ${name}!`;
+        inviteText.innerHTML = random(coolInvites(name)) + "<br><br><b>Пошли на обед вместе?</b>";
+      }, 600);
+    };
+
+    nameInput.addEventListener('keypress', function(e) {
+      if(e.key === 'Enter') goBtn.click();
+    });
+  </script>
+</body>
+</html>
