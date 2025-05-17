@@ -1,0 +1,316 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Management Consulting ANKI Cards</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --accent: #2076d2;
+      --bg: #f5faff;
+      --front: #fff;
+      --back: #e3f2fd;
+      --radius: 22px;
+      --shadow: 0 4px 24px 0 rgba(30,60,90,0.10);
+    }
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Montserrat', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 32px;
+      margin: 0;
+    }
+    h1 {
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-size: 2.2rem;
+      letter-spacing: 0.01em;
+    }
+    .stats {
+      margin-bottom: 16px;
+      color: #4079a0;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+    }
+    .anki-container {
+      width: 420px;
+      max-width: 95vw;
+      min-height: 340px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    .card {
+      width: 100%;
+      height: 260px;
+      perspective: 1000px;
+      margin-bottom: 22px;
+      position: relative;
+      cursor: pointer;
+    }
+    .card-inner {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s cubic-bezier(0.4,0.2,0.2,1.3);
+      transform-style: preserve-3d;
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+    }
+    .card.flipped .card-inner {
+      transform: rotateY(180deg);
+    }
+    .card-front, .card-back {
+      background: var(--front);
+      border-radius: var(--radius);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5rem;
+      padding: 24px;
+      box-sizing: border-box;
+      box-shadow: var(--shadow);
+    }
+    .card-back {
+      background: var(--back);
+      transform: rotateY(180deg);
+      font-size: 1.1rem;
+      color: #284057;
+    }
+    .card-front {
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .desc {
+      margin-top: 14px;
+      font-size: 1.02rem;
+      color: #49698e;
+      opacity: 0.85;
+      text-align: center;
+    }
+    .btn-group {
+      display: flex;
+      gap: 18px;
+    }
+    button {
+      padding: 10px 28px;
+      font-size: 1.09rem;
+      font-family: inherit;
+      border-radius: 18px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 2px 10px 0 rgba(32,118,210,0.09);
+      cursor: pointer;
+      transition: background 0.22s, transform 0.22s;
+      font-weight: bold;
+    }
+    button:active {
+      background: #1450a3;
+      transform: scale(0.97);
+    }
+    button.secondary {
+      background: #f4f6f8;
+      color: #2076d2;
+      border: 1.5px solid #a5c7ed;
+    }
+    .restart {
+      margin-top: 24px;
+      font-size: 1rem;
+      color: #888;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 0;
+    }
+    @media (max-width:500px) {
+      .anki-container { width: 99vw; min-height: 220px;}
+      .card { height: 170px; }
+      .card-front, .card-back { font-size: 1rem; padding: 8px;}
+    }
+  </style>
+</head>
+<body>
+  <h1>Management Consulting: ANKI Cards</h1>
+  <div class="stats">
+    Выучено: <span id="knownCount">0</span> / <span id="totalCount">0</span>
+  </div>
+  <div class="anki-container">
+    <div class="card" id="card">
+      <div class="card-inner">
+        <div class="card-front">
+          <span id="termFront"></span>
+          <div class="desc" id="descFront"></div>
+        </div>
+        <div class="card-back">
+          <span id="termBack"></span>
+          <div class="desc" id="descBack"></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button id="knowBtn">Знаю</button>
+      <button id="dontKnowBtn" class="secondary">Не знаю</button>
+    </div>
+    <button class="restart" id="restartBtn" style="display:none">Начать сначала</button>
+  </div>
+  <script>
+    // ТЕРМИНЫ: Английский, Русский, Описание
+    const terms = [
+      // Базовые понятия
+      {en: "Management consulting", ru: "управленческое консультирование", desc: "Оказание профессиональных консультационных услуг для улучшения управления и эффективности организации."},
+      {en: "Consultant", ru: "консультант", desc: "Профессионал, дающий независимые советы или помогающий внедрять изменения в организации."},
+      {en: "Client", ru: "клиент", desc: "Организация или лицо, нанимающее консультанта для решения управленческих задач."},
+      {en: "Engagement / Assignment", ru: "проект / задание / консультационное задание", desc: "Конкретная консультационная работа или проект для клиента."},
+      {en: "Competence", ru: "компетентность", desc: "Совокупность знаний, навыков и опыта, необходимых для эффективного консультирования."},
+      {en: "Professional ethics", ru: "профессиональная этика", desc: "Совокупность этических норм и стандартов поведения консультанта."},
+      {en: "Code of ethics", ru: "этический кодекс", desc: "Документ, регламентирующий нормы поведения консультантов."},
+      {en: "Best practices", ru: "передовая практика / лучшие практики", desc: "Наиболее эффективные методы и приемы, признанные в профессиональном сообществе."},
+      {en: "Continuous professional development (CPD)", ru: "постоянное профессиональное развитие", desc: "Непрерывное обучение и совершенствование компетенций консультанта."},
+      // Работа с клиентом
+      {en: "Stakeholder", ru: "заинтересованная сторона / стейкхолдер", desc: "Лицо или группа, затрагиваемая результатами консультационного проекта."},
+      {en: "Needs assessment", ru: "оценка потребностей", desc: "Выявление и анализ нужд клиента перед началом проекта."},
+      {en: "Scope of work", ru: "объем работ", desc: "Четкое определение границ, целей и задач консультационного проекта."},
+      {en: "Deliverable", ru: "конечный результат / продукт проекта", desc: "Конкретный результат, который должен быть представлен клиенту."},
+      {en: "Value proposition", ru: "предложение ценности", desc: "Описание выгод и преимуществ, которые клиент получает от проекта."},
+      {en: "Terms of reference (ToR)", ru: "техническое задание / рамки проекта", desc: "Документ, описывающий цели, задачи, методы и критерии успеха проекта."},
+      {en: "Service agreement / Consulting contract", ru: "договор на оказание консультационных услуг", desc: "Официальный договор, регулирующий отношения между консультантом и клиентом."},
+      {en: "Confidentiality / Non-disclosure agreement (NDA)", ru: "конфиденциальность / соглашение о неразглашении", desc: "Документ, обязывающий стороны не раскрывать информацию о проекте."},
+      // Этические и проф.принципы
+      {en: "Integrity", ru: "добросовестность / принципиальность", desc: "Честность, открытость, следование профессиональным принципам независимо от обстоятельств."},
+      {en: "Objectivity", ru: "объективность", desc: "Независимость суждений, отсутствие личной заинтересованности."},
+      {en: "Transparency", ru: "прозрачность", desc: "Открытость информации и процессов для клиента."},
+      {en: "Accountability", ru: "ответственность", desc: "Обязанность консультанта отвечать за свои действия и результаты."},
+      {en: "Conflict of interest", ru: "конфликт интересов", desc: "Ситуация, когда личные интересы могут повлиять на объективность работы."},
+      {en: "Confidentiality", ru: "конфиденциальность", desc: "Обязанность не разглашать сведения, полученные от клиента."},
+      {en: "Due diligence", ru: "должная осмотрительность / комплексная проверка", desc: "Тщательная оценка и анализ фактов, рисков и последствий решений."},
+      {en: "Professional reputation", ru: "профессиональная репутация", desc: "Совокупное мнение рынка о квалификации и этике консультанта."},
+      // Организационные процессы
+      {en: "Organizational diagnosis", ru: "организационная диагностика", desc: "Методы анализа состояния компании для выявления проблем и точек роста."},
+      {en: "Strategic planning", ru: "стратегическое планирование", desc: "Разработка долгосрочных целей и путей их достижения."},
+      {en: "Change management", ru: "управление изменениями", desc: "Методы внедрения и поддержки изменений в организации."},
+      {en: "Performance improvement", ru: "повышение эффективности", desc: "Совокупность мероприятий по оптимизации работы компании."},
+      {en: "Restructuring", ru: "реструктуризация", desc: "Структурные преобразования в компании для повышения её эффективности."},
+      {en: "Facilitation", ru: "фасилитация", desc: "Ведение групповой работы, обсуждений и сессий для поиска решений."},
+      {en: "Coaching / Mentoring", ru: "коучинг / наставничество", desc: "Индивидуальное сопровождение развития управленцев и специалистов."},
+      // Оценка и отчетность
+      {en: "Feedback", ru: "обратная связь", desc: "Комментарии, оценки и предложения по итогам проекта от клиента или коллег."},
+      {en: "Recommendation / Reference", ru: "рекомендация / отзыв", desc: "Официальная или неофициальная оценка работы консультанта клиентом."},
+      {en: "Case study", ru: "описание проекта / практический кейс", desc: "Детальное описание процесса и результатов выполненного проекта."},
+      {en: "Report", ru: "отчет", desc: "Документ с анализом, выводами и рекомендациями по проекту."},
+      {en: "Key performance indicators (KPIs)", ru: "ключевые показатели эффективности", desc: "Метрики для оценки успешности проекта или деятельности."},
+      // Сообщество и развитие
+      {en: "Professional association", ru: "профессиональное объединение / ассоциация", desc: "Организация, объединяющая консультантов для защиты интересов и развития отрасли."},
+      {en: "Certification", ru: "сертификация", desc: "Формальная процедура подтверждения квалификации."},
+      {en: "CMC (Certified Management Consultant)", ru: "сертифицированный консультант по управлению", desc: "Международно признанный профессиональный статус в консалтинге."},
+      {en: "IMC (Institute of Management Consultants)", ru: "Институт консультантов по управлению", desc: "Национальная или международная профессиональная организация."},
+      {en: "ICMCI (International Council of Management Consulting Institutes)", ru: "Международный совет институтов консалтинга", desc: "Глобальная организация, объединяющая национальные ассоциации консультантов."}
+    ];
+    let state = {
+      left: [],
+      known: [],
+      current: 0,
+      flipped: false
+    };
+
+    // Shuffle
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function init() {
+      state.left = shuffle([...Array(terms.length).keys()]);
+      state.known = [];
+      state.current = 0;
+      state.flipped = false;
+      document.getElementById('totalCount').textContent = terms.length;
+      document.getElementById('knownCount').textContent = state.known.length;
+      document.getElementById('restartBtn').style.display = "none";
+      showCard();
+    }
+
+    function showCard() {
+      const idx = state.left[state.current];
+      const card = document.getElementById('card');
+      card.classList.remove('flipped');
+      state.flipped = false;
+      if (typeof idx === "undefined") {
+        document.getElementById('termFront').textContent = 'Поздравляем!';
+        document.getElementById('descFront').textContent = 'Вы прошли все карточки!';
+        document.getElementById('termBack').textContent = '';
+        document.getElementById('descBack').textContent = '';
+        document.getElementById('knowBtn').disabled = true;
+        document.getElementById('dontKnowBtn').disabled = true;
+        document.getElementById('restartBtn').style.display = "";
+        return;
+      }
+      const t = terms[idx];
+      document.getElementById('termFront').textContent = t.en;
+      document.getElementById('descFront').textContent = t.desc;
+      document.getElementById('termBack').textContent = t.ru;
+      document.getElementById('descBack').textContent = t.desc;
+      document.getElementById('knowBtn').disabled = false;
+      document.getElementById('dontKnowBtn').disabled = false;
+      document.getElementById('restartBtn').style.display = "none";
+      updateStats();
+    }
+
+    function flipCard() {
+      if (typeof state.left[state.current] === "undefined") return;
+      const card = document.getElementById('card');
+      state.flipped = !state.flipped;
+      card.classList.toggle('flipped');
+    }
+
+    function handleKnow() {
+      state.known.push(state.left[state.current]);
+      state.left.splice(state.current, 1);
+      if (state.left.length === 0) {
+        showCard();
+        return;
+      }
+      if (state.current >= state.left.length) state.current = 0;
+      showCard();
+    }
+    function handleDontKnow() {
+      // Просто перемешиваем оставшиеся карточки (эмулируем повтор)
+      if (state.left.length > 1) {
+        state.left.push(state.left.splice(state.current, 1)[0]);
+      }
+      if (state.current >= state.left.length) state.current = 0;
+      showCard();
+    }
+    function updateStats() {
+      document.getElementById('knownCount').textContent = state.known.length;
+      document.getElementById('totalCount').textContent = terms.length;
+    }
+
+    document.getElementById('card').addEventListener('click', flipCard);
+    document.getElementById('knowBtn').addEventListener('click', handleKnow);
+    document.getElementById('dontKnowBtn').addEventListener('click', handleDontKnow);
+    document.getElementById('restartBtn').addEventListener('click', init);
+
+    // Инициализация
+    window.onload = init;
+  </script>
+</body>
+</html>
