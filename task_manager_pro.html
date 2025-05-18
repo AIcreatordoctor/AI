@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Task Manager Pro — Личные задачи</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {font-family: 'Segoe UI', Arial, sans-serif; background: #f7f9fb; margin:0; padding:0;}
+    .container {max-width: 1250px; margin: 0 auto; padding: 24px;}
+    h1 {font-size: 2.2em; color:#236372;}
+    .controls {display:flex; gap:14px; flex-wrap:wrap; margin-bottom:18px;}
+    .controls input, .controls select {padding:6px 12px; font-size:1em;}
+    .add-btn, .import-btn, .export-btn {padding:7px 20px; border:none; border-radius:5px; font-weight:600; background:#236372; color:#fff; cursor:pointer;}
+    .add-btn:hover, .import-btn:hover, .export-btn:hover {background:#267ca8;}
+    table {width:100%; border-collapse:collapse; background:#fff; border-radius:10px; box-shadow:0 2px 12px #0001;}
+    th, td {padding:7px 9px; border-bottom:1px solid #f1f1f1; font-size:1em;}
+    th {background:#e7f2f7; color:#236372;}
+    tr:last-child td {border-bottom:none;}
+    tr:hover:not(.dashboard-row) {background:#f8fcfd;}
+    .status-new {color:#267ca8;}
+    .status-inprogress {color:#d4981b;}
+    .status-done {color:#26a866;}
+    .status-deferred {color:#8b8b8b;}
+    .status-cancelled {color:#d43434;}
+    .wsjf-high {background:#f9dada;}
+    .wsjf-med {background:#fff6db;}
+    .wsjf-low {background:#e6f7e6;}
+    .deadline-red {background:#ffd4d4 !important;}
+    .deadline-yellow {background:#fff7d1 !important;}
+    .category-badge {display:inline-block; padding:3px 7px; background:#e3e8f3; border-radius:4px; margin-right:3px;}
+    .edit-btn, .del-btn {padding:3px 10px; border:none; border-radius:4px; font-size:0.95em; margin-right:3px; cursor:pointer;}
+    .edit-btn {background:#e0f7fa; color:#236372;}
+    .del-btn {background:#fbe9e7; color:#d43434;}
+    .modal-bg {display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#0007; align-items:center; justify-content:center; z-index:1000;}
+    .modal {background:#fff; padding:22px 18px 12px 18px; border-radius:9px; max-width:420px; width:95%; box-shadow:0 6px 40px #0003;}
+    .modal h2 {margin-top:0;}
+    .modal label {display:block; margin-top:12px;}
+    .modal input, .modal select, .modal textarea {width:98%; padding:7px; font-size:1em; margin-top:3px;}
+    .modal .form-btns {margin-top:18px; display:flex; justify-content:space-between;}
+    .close-modal {background:#e7f2f7; color:#236372; border:none; border-radius:5px; padding:7px 14px; cursor:pointer;}
+    .save-btn {background:#236372; color:#fff; border:none; border-radius:5px; padding:7px 18px; cursor:pointer;}
+    .save-btn:hover {background:#267ca8;}
+    .dashboard {margin-top:35px; margin-bottom:12px;}
+    .chart-container {display:flex; gap:40px; flex-wrap:wrap;}
+    .chart-block {background:#fff; padding:16px 22px 10px 22px; border-radius:11px; box-shadow:0 2px 12px #0001; margin-bottom:25px;}
+    .chart-block h3 {margin-top:0; font-size:1.1em;}
+    .import-input {display:none;}
+    @media (max-width:900px) {.chart-container{flex-direction:column;}}
+    @media (max-width:600px){
+      .controls {flex-direction:column;}
+      .chart-block {padding:10px 2vw;}
+      .modal {padding: 8px;}
+      .container {padding:7px;}
+      table th,table td {font-size:0.9em;}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Task Manager Pro — Личные задачи</h1>
+  <div class="controls">
+    <input id="search" type="text" placeholder="Поиск по задачам, категории, WSJF...">
+    <select id="statusFilter">
+      <option value="">Все статусы</option>
+      <option value="Новая">Новая</option>
+      <option value="В работе">В работе</option>
+      <option value="Готово">Готово</option>
+      <option value="Отложена">Отложена</option>
+      <option value="Отменена">Отменена</option>
+    </select>
+    <select id="categoryFilter">
+      <option value="">Все категории</option>
+    </select>
+    <button class="add-btn" onclick="openModal()">+ Новая задача</button>
+    <button class="import-btn" onclick="document.getElementById('importFile').click()">Импорт</button>
+    <input id="importFile" class="import-input" type="file" accept=".json" onchange="importTasks(this)">
+    <button class="export-btn" onclick="exportTasks()">Экспорт</button>
+  </div>
+
+  <table id="tasksTable">
+    <thead>
+      <tr>
+        <th>Задача</th>
+        <th>WSJF</th>
+        <th>Эйзенхауэр</th>
+        <th>Категория</th>
+        <th>От кого</th>
+        <th>Дата</th>
+        <th>Дедлайн</th>
+        <th>Статус</th>
+        <th>Комментарий</th>
+        <th>Результат</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="dashboard">
+    <div class="chart-container">
+      <div class="chart-block"><h3>Задачи по статусу</h3><canvas id="statusChart" width="240" height="200"></canvas></div>
+      <div class="chart-block"><h3>Задачи по категории</h3><canvas id="categoryChart" width="240" height="200"></canvas></div>
+      <div class="chart-block"><h3>Распределение WSJF</h3><canvas id="wsjfChart" width="240" height="200"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Новая задача</h2>
+    <form id="taskForm" onsubmit="saveTask(event)">
+      <input type="hidden" id="editIndex">
+      <label>Задача<input id="taskName" required></label>
+      <label>WSJF
+        <select id="taskWSJF" required>
+          <option value="">—</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="5">5</option>
+          <option value="8">8</option>
+          <option value="13">13</option>
+          <option value="21">21</option>
+        </select>
+      </label>
+      <label>Эйзенхауэр
+        <select id="taskEisen">
+          <option value="">—</option>
+          <option value="Срочно и важно (Делать сейчас)">Срочно и важно (Делать сейчас)</option>
+          <option value="Важно, но не срочно (Планировать)">Важно, но не срочно (Планировать)</option>
+          <option value="Срочно, но не важно (Делегировать)">Срочно, но не важно (Делегировать)</option>
+          <option value="Не важно и не срочно (Удалить / проигнорировать)">Не важно и не срочно (Удалить / проигнорировать)</option>
+        </select>
+      </label>
+      <label>Категория
+        <select id="taskCategory" required>
+          <option value="">—</option>
+          <option value="Продукт">Продукт</option>
+          <option value="Маркетинг">Маркетинг</option>
+          <option value="ИИ">ИИ</option>
+          <option value="Разработка">Разработка</option>
+          <option value="Встречи">Встречи</option>
+          <option value="Продвижение">Продвижение</option>
+          <option value="Оперативные задачи">Оперативные задачи</option>
+        </select>
+      </label>
+      <label>От кого<input id="taskAuthor"></label>
+      <label>Дата получения<input id="taskDate" type="date"></label>
+      <label>Дедлайн<input id="taskDeadline" type="date"></label>
+      <label>Статус
+        <select id="taskStatus">
+          <option value="Новая">Новая</option>
+          <option value="В работе">В работе</option>
+          <option value="Готово">Готово</option>
+          <option value="Отложена">Отложена</option>
+          <option value="Отменена">Отменена</option>
+        </select>
+      </label>
+      <label>Комментарий<textarea id="taskComment"></textarea></label>
+      <label>Результат<textarea id="taskResult"></textarea></label>
+      <div class="form-btns">
+        <button class="save-btn" type="submit">Сохранить</button>
+        <button class="close-modal" type="button" onclick="closeModal()">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // --- Data logic ---
+  let tasks = JSON.parse(localStorage.getItem('tasksPro')) || [];
+
+  function saveTasks() { localStorage.setItem('tasksPro', JSON.stringify(tasks)); }
+
+  // --- Render Logic ---
+  function renderTable() {
+    const tbody = document.querySelector('#tasksTable tbody');
+    tbody.innerHTML = '';
+    let search = document.getElementById('search').value.trim().toLowerCase();
+    let statusF = document.getElementById('statusFilter').value;
+    let catF = document.getElementById('categoryFilter').value;
+
+    // Сбор уникальных категорий
+    let categories = new Set();
+    tasks.forEach(t => { if (t.category) categories.add(t.category); });
+    let catSel = document.getElementById('categoryFilter');
+    let selected = catSel.value;
+    catSel.innerHTML = '<option value="">Все категории</option>';
+    Array.from(categories).sort().forEach(c=>{
+      let opt = document.createElement('option');
+      opt.value = c; opt.innerText = c;
+      if (selected===c) opt.selected=true;
+      catSel.appendChild(opt);
+    });
+
+    tasks.forEach((task, idx) => {
+      if (
+        (search && ![task.name, task.category, task.wsjf, task.eisen, task.comment, task.author, task.result].some(v => (v||'').toString().toLowerCase().includes(search)))
+        || (statusF && task.status !== statusF)
+        || (catF && task.category !== catF)
+      ) return;
+
+      let tr = document.createElement('tr');
+
+      // --- Дедлайн раскраска
+      let deadlineClass = '';
+      if (task.deadline) {
+        let d = new Date(task.deadline), today = new Date();
+        today.setHours(0,0,0,0);
+        if ((d - today) < 0) deadlineClass = 'deadline-red';
+        else if ((d - today) <= 3*24*3600*1000) deadlineClass = 'deadline-yellow';
+      }
+
+      // --- WSJF цвет
+      let wsjfClass = '';
+      if (+task.wsjf >= 13) wsjfClass = 'wsjf-high';
+      else if (+task.wsjf >= 5) wsjfClass = 'wsjf-med';
+      else wsjfClass = 'wsjf-low';
+
+      // --- Категория бадж
+      let catBadge = task.category ? `<span class="category-badge">${task.category}</span>` : '';
+
+      tr.innerHTML = `
+        <td>${task.name||''}</td>
+        <td class="${wsjfClass}" style="text-align:center">${task.wsjf||''}</td>
+        <td>${task.eisen||''}</td>
+        <td>${catBadge}</td>
+        <td>${task.author||''}</td>
+        <td>${task.date||''}</td>
+        <td class="${deadlineClass}" style="text-align:center">${task.deadline||''}</td>
+        <td class="status-${statusColor(task.status)}">${task.status||''}</td>
+        <td>${task.comment||''}</td>
+        <td>${task.result||''}</td>
+        <td>
+          <button class="edit-btn" onclick="openModal(${idx})">✏️</button>
+          <button class="del-btn" onclick="delTask(${idx})">🗑️</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    drawDashboards();
+  }
+
+  function statusColor(st) {
+    if (!st) return '';
+    if (st=="В работе") return "inprogress";
+    if (st=="Готово") return "done";
+    if (st=="Отложена") return "deferred";
+    if (st=="Отменена") return "cancelled";
+    if (st=="Новая") return "new";
+    return '';
+  }
+
+  // --- Modal Logic ---
+  function openModal(idx) {
+    document.getElementById('modalBg').style.display = 'flex';
+    document.getElementById('taskForm').reset();
+    document.getElementById('editIndex').value = idx === undefined ? '' : idx;
+    document.getElementById('modalTitle').innerText = idx === undefined ? "Новая задача" : "Редактировать задачу";
+    if (idx !== undefined) {
+      let t = tasks[idx];
+      document.getElementById('taskName').value = t.name||'';
+      document.getElementById('taskWSJF').value = t.wsjf||'';
+      document.getElementById('taskEisen').value = t.eisen||'';
+      document.getElementById('taskCategory').value = t.category||'';
+      document.getElementById('taskAuthor').value = t.author||'';
+      document.getElementById('taskDate').value = t.date||'';
+      document.getElementById('taskDeadline').value = t.deadline||'';
+      document.getElementById('taskStatus').value = t.status||'Новая';
+      document.getElementById('taskComment').value = t.comment||'';
+      document.getElementById('taskResult').value = t.result||'';
+    }
+  }
+  function closeModal() { document.getElementById('modalBg').style.display = 'none'; }
+
+  function saveTask(ev) {
+    ev.preventDefault();
+    let t = {
+      name: document.getElementById('taskName').value,
+      wsjf: document.getElementById('taskWSJF').value,
+      eisen: document.getElementById('taskEisen').value,
+      category: document.getElementById('taskCategory').value,
+      author: document.getElementById('taskAuthor').value,
+      date: document.getElementById('taskDate').value,
+      deadline: document.getElementById('taskDeadline').value,
+      status: document.getElementById('taskStatus').value,
+      comment: document.getElementById('taskComment').value,
+      result: document.getElementById('taskResult').value,
+    };
+    let idx = document.getElementById('editIndex').value;
+    if (idx === '') tasks.unshift(t);
+    else tasks[idx] = t;
+    saveTasks();
+    closeModal();
+    renderTable();
+  }
+  function delTask(idx) {
+    if (confirm("Удалить задачу?")) {
+      tasks.splice(idx, 1);
+      saveTasks();
+      renderTable();
+    }
+  }
+
+  // --- Import/Export ---
+  function exportTasks() {
+    let data = JSON.stringify(tasks, null, 2);
+    let blob = new Blob([data], {type:'application/json'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url; a.download = 'tasks.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+  function importTasks(input) {
+    if (!input.files.length) return;
+    let file = input.files[0];
+    let reader = new FileReader();
+    reader.onload = function(e){
+      try {
+        let arr = JSON.parse(e.target.result);
+        if (Array.isArray(arr)) {
+          if (confirm('Заменить все задачи на импортированные?')) {
+            tasks = arr;
+            saveTasks();
+            renderTable();
+          }
+        }
+      } catch { alert('Файл повреждён или неверного формата'); }
+    };
+    reader.readAsText(file);
+  }
+
+  // --- Chart.js Dashboards ---
+  let statusChart, categoryChart, wsjfChart;
+  function drawDashboards() {
+    // 1. Статусы
+    let sLabels = ["Новая","В работе","Готово","Отложена","Отменена"];
+    let sCounts = sLabels.map(st=>tasks.filter(t=>t.status===st).length);
+    // 2. Категории
+    let allCats = [...new Set(tasks.map(t=>t.category).filter(Boolean))];
+    let cCounts = allCats.map(c=>tasks.filter(t=>t.category===c).length);
+    // 3. WSJF buckets
+    let wLabels = ["<5","5-10","11-20",">20"];
+    let wCounts = [0,0,0,0];
+    tasks.forEach(t=>{
+      let w = +t.wsjf||0;
+      if (w<5) wCounts[0]++;
+      else if (w<=10) wCounts[1]++;
+      else if (w<=20) wCounts[2]++;
+      else wCounts[3]++;
+    });
+    // Draw
+    if (statusChart) statusChart.destroy();
+    if (categoryChart) categoryChart.destroy();
+    if (wsjfChart) wsjfChart.destroy();
+    let ctx1 = document.getElementById('statusChart').getContext('2d');
+    statusChart = new Chart(ctx1, {
+      type:'pie',
+      data:{labels:sLabels, datasets:[{data:sCounts,backgroundColor:["#90caf9","#ffd54f","#c8e6c9","#e0e0e0","#ffcdd2"]}]},
+      options:{responsive:true, plugins:{legend:{position:'bottom'}}}
+    });
+    let ctx2 = document.getElementById('categoryChart').getContext('2d');
+    categoryChart = new Chart(ctx2, {
+      type:'bar',
+      data:{labels:allCats, datasets:[{data:cCounts,backgroundColor:"#b3e5fc"}]},
+      options:{responsive:true, plugins:{legend:{display:false}}}
+    });
+    let ctx3 = document.getElementById('wsjfChart').getContext('2d');
+    wsjfChart = new Chart(ctx3, {
+      type:'bar',
+      data:{labels:wLabels, datasets:[{data:wCounts,backgroundColor:"#ffe082"}]},
+      options:{responsive:true, plugins:{legend:{display:false}}}
+    });
+  }
+
+  // --- Initial render ---
+  document.getElementById('search').oninput = renderTable;
+  document.getElementById('statusFilter').onchange = renderTable;
+  document.getElementById('categoryFilter').onchange = renderTable;
+  renderTable();
+</script>
+</body>
+</html>
