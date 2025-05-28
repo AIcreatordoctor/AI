@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LexAI Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background-color: #F8F9FA;
+            color: #23272F;
+            overflow-x: hidden;
+        }
+        
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            margin: 20px auto;
+            background: #000;
+            border-radius: 40px;
+            padding: 2px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: #FFFFFF;
+            border-radius: 38px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            background: #FFFFFF;
+            font-size: 17px;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .time {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+        
+        /* Header */
+        .header {
+            height: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            background: #FFFFFF;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #4579E8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #23272F;
+            letter-spacing: -0.5px;
+        }
+        
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #4579E8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            position: relative;
+        }
+        
+        .notification-icon::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: #FF3B30;
+            border-radius: 50%;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 20px;
+            height: calc(100% - 104px - 80px);
+            overflow-y: auto;
+        }
+        
+        /* Search Bar */
+        .search-bar {
+            width: 100%;
+            height: 56px;
+            background: #FFFFFF;
+            border: 2px solid #4579E8;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(69, 121, 232, 0.1);
+        }
+        
+        .search-icon {
+            color: #4579E8;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        .search-input {
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #23272F;
+            background: transparent;
+            width: 100%;
+        }
+        
+        .search-input::placeholder {
+            color: #B0B8C1;
+        }
+        
+        /* Action Cards Grid */
+        .action-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .action-card {
+            height: 100px;
+            background: #F8FAFC;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        
+        .card-icon {
+            width: 36px;
+            height: 36px;
+            background: #4579E8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+        
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #23272F;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        /* Section Headers */
+        .section-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: #23272F;
+            margin-bottom: 16px;
+        }
+        
+        /* Recommendations */
+        .recommendations {
+            margin-bottom: 28px;
+        }
+        
+        .recommendation-cards {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        
+        .recommendation-card {
+            min-width: 200px;
+            height: 60px;
+            background: #FFFFFF;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer;
+        }
+        
+        .rec-icon {
+            width: 36px;
+            height: 36px;
+            background: #4579E8;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .rec-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #23272F;
+            line-height: 1.3;
+        }
+        
+        /* History */
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-icon {
+            width: 24px;
+            height: 24px;
+            background: #E5E7EB;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #6B7280;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .history-text {
+            font-size: 15px;
+            color: #23272F;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #FFFFFF;
+            border-top: 1px solid #F0F0F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding-bottom: 20px;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item.active .nav-icon {
+            color: #4579E8;
+        }
+        
+        .nav-item.active .nav-label {
+            color: #4579E8;
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+        
+        .nav-label {
+            font-size: 12px;
+            color: #6B7280;
+            font-weight: 500;
+        }
+        
+        /* Scrollbar styling */
+        .recommendation-cards::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .main-content::-webkit-scrollbar {
+            width: 2px;
+        }
+        
+        .main-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .main-content::-webkit-scrollbar-thumb {
+            background: #E5E7EB;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="screen">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="time">9:41</div>
+                <div class="status-icons">
+                    <span>●●●●</span>
+                    <span>📶</span>
+                    <span>🔋</span>
+                </div>
+            </div>
+            
+            <!-- Header -->
+            <div class="header">
+                <div class="user-avatar">👤</div>
+                <div class="logo">LexAI</div>
+                <div class="notification-icon">🔔</div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Search Bar -->
+                <div class="search-bar">
+                    <div class="search-icon">🔍</div>
+                    <input type="text" class="search-input" placeholder="Что хотите узнать?">
+                </div>
+                
+                <!-- Action Cards -->
+                <div class="action-cards">
+                    <div class="action-card">
+                        <div class="card-icon">📂🔍</div>
+                        <div class="card-title">Анализ<br>кейса</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="card-icon">📝</div>
+                        <div class="card-title">Генерация<br>документа</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="card-icon">⚖️</div>
+                        <div class="card-title">Правовые<br>нормы</div>
+                    </div>
+                    <div class="action-card">
+                        <div class="card-icon">✅</div>
+                        <div class="card-title">Мои<br>задания</div>
+                    </div>
+                </div>
+                
+                <!-- Recommendations -->
+                <div class="recommendations">
+                    <div class="section-header">Рекомендовано вам</div>
+                    <div class="recommendation-cards">
+                        <div class="recommendation-card">
+                            <div class="rec-icon">🏆</div>
+                            <div class="rec-text">Анализируйте решение №123</div>
+                        </div>
+                        <div class="recommendation-card">
+                            <div class="rec-icon">📄</div>
+                            <div class="rec-text">Попробуйте новый шаблон</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- History -->
+                <div class="history">
+                    <div class="section-header">История</div>
+                    <div class="history-item">
+                        <div class="history-icon">📂</div>
+                        <div class="history-text">Вы загрузили дело №123</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon">📄</div>
+                        <div class="history-text">Создан шаблон договора</div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-icon">⭕</div>
+                        <div class="history-text">Выполнено задание 25.05</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <div class="nav-item active">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">Домой</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">🔍</div>
+                    <div class="nav-label">Поиск</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📄</div>
+                    <div class="nav-label">Документы</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">Профиль</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
