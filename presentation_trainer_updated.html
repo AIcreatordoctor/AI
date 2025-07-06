@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MedBase English Trainer PRO (Synonyms)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <style>
+    :root {
+      --accent: #0078d4;
+      --bg: #f7f8fa;
+      --card-bg: #fff;
+      --shadow: 0 4px 24px 0 rgba(0,0,0,0.08);
+      --radius: 22px;
+      --text-main: #222;
+      --text-secondary: #555;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      font-family: 'Inter', Arial, sans-serif;
+      min-height: 100vh;
+      color: var(--text-main);
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 98vh;
+      padding: 12px;
+    }
+    .header {
+      margin-bottom: 8px;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-align: center;
+      letter-spacing: 0.2px;
+    }
+    .category-bar {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .category-btn {
+      padding: 6px 14px;
+      background: #e9eef4;
+      color: #066;
+      border: none;
+      border-radius: 14px;
+      font-size: 0.96rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .14s;
+    }
+    .category-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .card {
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      padding: 30px 24px 20px 24px;
+      max-width: 430px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow 0.2s;
+      min-height: 295px;
+      margin-bottom: 10px;
+    }
+    .card h2 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin: 0 0 12px 0;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      text-align: center;
+      word-break: break-word;
+    }
+    .card .translation, .card .example, .card .synonyms {
+      font-size: 1.09rem;
+      margin: 9px 0 4px 0;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    .card .synonyms {
+      margin: 2px 0 0 0;
+      color: #9747ff;
+      font-size: 0.99rem;
+    }
+    .progress {
+      margin-top: 6px;
+      font-size: 1.06rem;
+      color: var(--accent);
+      letter-spacing: 0.2px;
+      margin-bottom: 8px;
+    }
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    button, .btn {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 500;
+      padding: 10px 19px;
+      border: none;
+      border-radius: 12px;
+      font-size: 1.04rem;
+      cursor: pointer;
+      transition: background 0.15s;
+      outline: none;
+      min-width: 76px;
+    }
+    button:active, .btn:active {
+      background: #004c88;
+    }
+    .cheatsheet-btn {
+      margin: 14px auto 6px auto;
+      display: block;
+      font-size: 0.97rem;
+      background: #f2f8fd;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+      padding: 7px 18px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: background .17s, color .17s;
+    }
+    .cheatsheet-btn:active { background: #e6f1fb; color: #003d6e;}
+    #cheatsheet {
+      display:none;
+      max-width:430px;
+      margin:12px auto 0;
+      padding:22px 18px;
+      border-radius:18px;
+      background:#fff;
+      box-shadow:0 2px 16px rgba(0,0,0,0.10);
+      font-size:1.09rem;
+      color: #333;
+      line-height: 1.5;
+    }
+    .close-x {
+      position:absolute;
+      right:24px;
+      top:17px;
+      color:#666;
+      font-size:1.45rem;
+      cursor:pointer;
+      z-index:1001;
+    }
+    .jump-bar {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px 0 0 0;
+      flex-wrap: wrap;
+    }
+    .jump-btn {
+      background: #e7eef7;
+      color: var(--accent);
+      border: none;
+      border-radius: 8px;
+      font-size: 0.96rem;
+      padding: 3px 11px;
+      cursor: pointer;
+    }
+    .jump-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .syn-btn {
+      background: #9747ff;
+      color: #fff;
+      border: none;
+      border-radius: 9px;
+      font-size: 0.97rem;
+      padding: 7px 13px;
+      margin-top: 4px;
+      margin-bottom: 1px;
+      cursor: pointer;
+    }
+    .syn-btn:active {
+      background: #6c21ba;
+    }
+    @media (max-width: 600px) {
+      .container {padding:5px;}
+      .header {font-size:1.09rem;}
+      .card {padding: 13px 5px 11px 5px; border-radius: 13px; max-width:98vw;}
+      .card h2 { font-size: 1.17rem; }
+      button, .btn, .syn-btn {font-size:0.97rem; min-width:52px; padding:8px 7px;}
+      .progress {font-size:0.92rem;}
+      #cheatsheet {padding:14px 3vw; font-size:0.97rem;}
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">MedBase English Trainer PRO<br><span style="font-size:0.98rem;color:#444;">(with Synonyms)</span></div>
+  <div class="category-bar" id="categoryBar"></div>
+  <div class="card" id="card">
+    <h2 id="en"></h2>
+    <div class="translation" id="ru" style="display:none"></div>
+    <div class="example" id="ex" style="display:none"></div>
+    <button class="syn-btn" id="showSynBtn" onclick="toggleSynonyms()" style="display:none;">Show synonyms</button>
+    <div class="synonyms" id="syn" style="display:none"></div>
+    <div class="progress" id="progress"></div>
+    <div class="actions">
+      <button onclick="prevCard()">←</button>
+      <button id="toggleBtn" onclick="toggleTranslation()">Show translation</button>
+      <button onclick="nextCard()">→</button>
+      <button onclick="randomCard()" style="background:#f1b500;color:#fff;">Random</button>
+    </div>
+    <div class="jump-bar" id="jumpBar"></div>
+  </div>
+  <button class="cheatsheet-btn" onclick="toggleCheatsheet()">Show Demo Cheatsheet / Показать шпаргалку</button>
+  <div id="cheatsheet">
+    <span class="close-x" onclick="toggleCheatsheet()">&times;</span>
+    <b>DEMO STRUCTURE / СТРУКТУРА ДЕМО:</b><br><br>
+    <b>Общие:</b><br>
+    • Показываю реальный сценарий — как врач решает задачи за секунды.<br>
+    • Можно работать на русском, логика платформы универсальна.<br>
+    EN: Live demo: show real clinical scenario. Interface is in Russian, but logic is intuitive.<br><br>
+    <b>Шаги демонстрации:</b><br>
+    <b>1. Поиск по клиническому вопросу (ИИ):</b><br>
+    • Ввести клинический вопрос — получить структурированный ответ с ссылкой.<br>
+    EN: Enter clinical question — get structured answer with a source.<br><br>
+    <b>2. Проверка взаимодействий (LS+):</b><br>
+    • Ввести препараты — система рассчитывает взаимодействия, дубли, противопоказания.<br>
+    EN: Enter several drugs — system calculates interactions, duplications, contraindications.<br><br>
+    <b>3. Сложный поиск:</b><br>
+    • Искать по МКБ, ATX, диагнозу — гибкий многопараметрический поиск.<br>
+    EN: Search by ICD, ATX, diagnosis — flexible multiparameter search.<br><br>
+    <b>4. Доступ к библиотеке:</b><br>
+    • Показать быстрый поиск и просмотр руководств и книг.<br>
+    EN: Show fast search and view of guidelines and books.<br><br>
+    <b>5. Правовая поддержка:</b><br>
+    • Найти нормативный документ для клиники.<br>
+    EN: Find legal document or standard for clinic.<br><br>
+    <b>6. Заключение:</b><br>
+    • Всё работает быстро, удобно, подтверждено источниками.<br>
+    • Доступно для тестирования, готовы доработать.<br>
+    EN: Everything works fast, easy, evidence-based. Platform is available for testing.<br>
+  </div>
+</div>
+<script>
+const cards = [
+  {en:'next-generation platform',ru:'платформа нового поколения',ex:'MedBaseGeotar is a next-generation platform for healthcare.',syn:'cutting-edge platform, modern platform, state-of-the-art system',cat:'Main'},
+  {en:'AI-powered search',ru:'поиск на основе искусственного интеллекта',ex:'The platform features AI-powered search for fast answers.',syn:'intelligent search, smart search, machine learning search',cat:'Main'},
+  {en:'evidence-based',ru:'основанный на доказательствах',ex:'We provide evidence-based knowledge.',syn:'proven, validated, fact-based',cat:'Main'},
+  {en:'clinical guidelines',ru:'клинические рекомендации',ex:'MedBaseGeotar includes up-to-date clinical guidelines.',syn:'clinical protocols, recommendations, best practices',cat:'Main'},
+  {en:'legal support',ru:'правовая поддержка',ex:'The platform provides a legal support module for risk management.',syn:'regulatory assistance, legal advice, compliance support',cat:'Main'},
+  {en:'pharmacotherapy',ru:'фармакотерапия',ex:'LS+ module helps assess pharmacotherapy risks.',syn:'drug therapy, medication therapy, pharmaceutical treatment',cat:'Main'},
+  {en:'drug interactions',ru:'взаимодействия препаратов',ex:'LS+ allows you to instantly check drug interactions.',syn:'medication interactions, drug combinations, cross-reactions',cat:'Main'},
+  {en:'contraindications',ru:'противопоказания',ex:'The system highlights contraindications for each drug.',syn:'warnings, restrictions, limitations',cat:'Main'},
+  {en:'clinical decision',ru:'клиническое решение',ex:'The platform supports safe clinical decisions.',syn:'medical decision, professional judgement, diagnostic choice',cat:'Main'},
+  {en:'user-friendly',ru:'удобный для пользователя',ex:'The interface is user-friendly and intuitive.',syn:'easy to use, intuitive, simple interface',cat:'Main'},
+  {en:'integrated library',ru:'интегрированная библиотека',ex:'MedBaseGeotar offers an integrated digital library.',syn:'digital library, built-in library, e-library',cat:'Main'},
+  {en:'references / referenced answer',ru:'ссылки / ответ со ссылкой на источник',ex:'Every AI answer contains references to the source.',syn:'source links, citations, bibliography',cat:'Main'},
+  {en:'accessible from any device',ru:'доступен с любого устройства',ex:'The platform is accessible from any device.',syn:'mobile access, cross-device, multiplatform',cat:'Main'},
+  {en:'demo / live demonstration',ru:'демонстрация / живая демонстрация',ex:'Let me show you a live demo of the platform.',syn:'walkthrough, showcase, hands-on demo',cat:'Demo'},
+  {en:'open for partnership',ru:'открыты к сотрудничеству',ex:'We are open for partnership and local adaptation.',syn:'open for collaboration, interested in cooperation, willing to partner',cat:'Closing'},
+  {en:'let’s move on',ru:'давайте перейдём дальше',ex:'Let’s move on to the next section.',syn:'let’s continue, let’s proceed, next slide',cat:'Speech'},
+  {en:'please feel free to interrupt me',ru:'пожалуйста, не стесняйтесь перебивать меня',ex:'Please feel free to interrupt me if you have questions.',syn:'you can interrupt, stop me anytime, ask anytime',cat:'Speech'},
+  {en:'reliable answers',ru:'достоверные ответы',ex:'The platform provides fast and reliable answers.',syn:'trustworthy answers, accurate responses, dependable info',cat:'Main'},
+  {en:'comprehensive search',ru:'комплексный поиск',ex:'The platform offers comprehensive search by drug name, INN, or diagnosis.',syn:'full search, advanced search, all-in-one search',cat:'Main'},
+  {en:'up-to-date / updated daily',ru:'актуальный / обновляется ежедневно',ex:'Content is updated daily to stay up-to-date.',syn:'current, regularly updated, fresh content',cat:'Main'},
+  {en:'(to) tailor therapy',ru:'индивидуализировать терапию',ex:'LS+ helps tailor therapy to each patient.',syn:'personalize treatment, adapt therapy, customize medication',cat:'Demo'},
+  {en:'step-by-step guidance',ru:'пошаговая инструкция',ex:'Our books offer step-by-step guidance for clinical decisions.',syn:'detailed instructions, practical manual, how-to guide',cat:'Main'},
+  {en:'risk assessment',ru:'оценка риска',ex:'LS+ provides reliable risk assessment for pharmacotherapy.',syn:'risk evaluation, risk analysis, safety check',cat:'Demo'},
+  {en:'flexible search',ru:'гибкий поиск',ex:'You can use flexible search by ICD code or ATX classification.',syn:'versatile search, adjustable search, multiple-criteria search',cat:'Demo'},
+  {en:'saves valuable time',ru:'экономит ценное время',ex:'This function saves valuable time for clinicians.',syn:'time-saving, efficient, speeds up work',cat:'Demo'},
+  {en:'core features',ru:'ключевые функции',ex:'Let me show you the core features of the platform.',syn:'main features, key benefits, primary options',cat:'Speech'},
+  {en:'clinical scenario',ru:'клинический сценарий',ex:'Let’s look at a real clinical scenario using MedBaseGeotar.',syn:'clinical case, real-world example, practical case',cat:'Demo'},
+  {en:'interface',ru:'интерфейс',ex:'The interface is simple and intuitive.',syn:'UI, user experience, user panel',cat:'Main'},
+  {en:'pilot project',ru:'пилотный проект',ex:'We are ready to launch a pilot project with your organization.',syn:'trial run, initial deployment, test implementation',cat:'Closing'},
+  {en:'localization',ru:'локализация',ex:'We are working on localization for international markets.',syn:'translation, regional adaptation, language version',cat:'Closing'},
+  {en:'seamless integration',ru:'бесшовная интеграция',ex:'MedBaseGeotar allows seamless integration with hospital systems.',syn:'smooth integration, easy implementation, system integration',cat:'Closing'},
+  {en:'regular updates',ru:'регулярные обновления',ex:'Our content is updated regularly to meet standards.',syn:'frequent updates, periodic refresh, routine update',cat:'Main'},
+  {en:'support team / technical support',ru:'служба поддержки / техническая поддержка',ex:'Our support team is always ready to help users.',syn:'helpdesk, user support, customer service',cat:'Closing'},
+  {en:'medical community',ru:'медицинское сообщество',ex:'We welcome feedback from the medical community.',syn:'healthcare community, professional network, clinical audience',cat:'Closing'},
+  {en:'unique value',ru:'уникальное преимущество',ex:'The unique value is its combination of Russian and international knowledge.',syn:'distinctive feature, selling point, competitive advantage',cat:'Main'},
+  {en:'in-depth analysis',ru:'глубокий анализ',ex:'The platform supports in-depth analysis.',syn:'detailed analysis, thorough review, comprehensive study',cat:'Main'},
+  {en:'(to) ensure safety',ru:'обеспечивать безопасность',ex:'Our system helps ensure safety in pharmacotherapy.',syn:'guarantee safety, maintain safety, risk prevention',cat:'Demo'},
+  {en:'reference materials',ru:'справочные материалы',ex:'Find all reference materials in our digital library.',syn:'handbooks, guides, informational resources',cat:'Demo'},
+  {en:'medical standards',ru:'медицинские стандарты',ex:'The platform includes up-to-date medical standards.',syn:'clinical standards, best practice, care protocols',cat:'Main'},
+  {en:'regulatory compliance',ru:'соответствие требованиям',ex:'Fully compliant with regulations.',syn:'meets standards, legally compliant, within guidelines',cat:'Main'},
+  {en:'privacy / confidentiality',ru:'конфиденциальность',ex:'We guarantee privacy and data confidentiality.',syn:'data protection, information security, secrecy',cat:'Closing'},
+  {en:'device compatibility',ru:'совместимость с устройствами',ex:'Compatible with any device and OS.',syn:'cross-platform, multiplatform, mobile friendly',cat:'Main'},
+  {en:'custom solution',ru:'индивидуальное решение',ex:'We can offer a custom solution for your institution.',syn:'tailored solution, personalized approach, bespoke system',cat:'Closing'},
+  {en:'user onboarding',ru:'вводное обучение пользователей',ex:'We provide onboarding for new users.',syn:'getting started, user training, introduction',cat:'Closing'},
+  {en:'demo access / trial account',ru:'демо-доступ / тестовый аккаунт',ex:'We can give you demo access.',syn:'trial access, sample account, free demo',cat:'Closing'},
+  {en:'market needs',ru:'потребности рынка',ex:'We adapt our solution to local market needs.',syn:'market demands, local requirements, client needs',cat:'Closing'},
+  {en:'summary / in summary',ru:'резюме / в итоге',ex:'In summary, MedBaseGeotar brings speed and accuracy.',syn:'in short, in conclusion, to sum up',cat:'Speech'},
+  {en:'let me clarify',ru:'позвольте уточнить',ex:'Let me clarify if you have any questions.',syn:'let me explain, allow me to specify, let me make it clear',cat:'Speech'},
+  {en:'key benefit',ru:'ключевое преимущество',ex:'A key benefit is fast, referenced clinical information.',syn:'main advantage, major benefit, primary value',cat:'Main'},
+  {en:'partnership opportunities',ru:'возможности для партнёрства',ex:'We are open to partnership opportunities.',syn:'cooperation prospects, business partnership, collaboration',cat:'Closing'},
+  {en:'transparent / transparency',ru:'прозрачный / прозрачность',ex:'All AI answers are fully transparent and referenced.',syn:'open, clear, traceable',cat:'Main'},
+  {en:'cost-effective',ru:'экономически выгодный',ex:'Our platform is a cost-effective solution.',syn:'affordable, budget-friendly, value for money',cat:'Closing'},
+  {en:'knowledge base',ru:'база знаний',ex:'MedBaseGeotar is an advanced knowledge base.',syn:'information base, resource base, knowledge bank',cat:'Main'},
+  {en:'implementation',ru:'внедрение',ex:'Implementation is quick and simple.',syn:'roll-out, deployment, integration',cat:'Closing'},
+  {en:'scalability',ru:'масштабируемость',ex:'The system is scalable for hospitals of any size.',syn:'expandability, flexibility, growth potential',cat:'Closing'},
+  {en:'training session',ru:'сессия обучения',ex:'We can organize a training session for staff.',syn:'workshop, seminar, learning session',cat:'Closing'},
+  {en:'further questions',ru:'дополнительные вопросы',ex:'If you have further questions, I’m happy to answer.',syn:'more questions, additional queries, follow-up questions',cat:'Speech'},
+  {en:'let’s get started',ru:'давайте начнем',ex:'Let’s get started with the demo.',syn:'let’s begin, let’s kick off, let’s start',cat:'Demo'},
+  {en:'available 24/7',ru:'доступен 24/7',ex:'The platform is available 24/7.',syn:'always available, round-the-clock, at any time',cat:'Main'},
+  {en:'as you can see',ru:'как вы видите',ex:'As you can see, the interface is simple.',syn:'as shown, as demonstrated, as you notice',cat:'Speech'}
+];
+
+const categories = [
+  {key: 'All', name: 'All / Все'},
+  {key: 'Main', name: 'Key Phrases / Ключевые слова'},
+  {key: 'Demo', name: 'Demo Scenario / Демо-сценарий'},
+  {key: 'Speech', name: 'Speech Patterns / Речевые шаблоны'},
+  {key: 'Closing', name: 'Closing & Partnership / Завершение'}
+];
+
+let idx = 0, shown = false, synShown = false, currentCat = 'All', cardOrder = [];
+
+function filterCards() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  cardOrder = Array.from({length: filtered.length}, (_,i)=>i);
+  idx = 0;
+  shown = false; synShown = false;
+  showCard();
+  renderJumpBar();
+}
+
+function showCard() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  if (filtered.length === 0) { document.getElementById('en').innerText = 'No cards'; return;}
+  let card = filtered[cardOrder[idx]];
+  document.getElementById('en').innerText = card.en;
+  document.getElementById('ru').innerText = card.ru;
+  document.getElementById('ex').innerText = card.ex;
+  document.getElementById('progress').innerText = `${idx+1} / ${filtered.length}`;
+  document.getElementById('ru').style.display = shown ? 'block' : 'none';
+  document.getElementById('ex').style.display = shown ? 'block' : 'none';
+  document.getElementById('toggleBtn').innerText = shown ? 'Hide translation' : 'Show translation';
+  document.getElementById('syn').innerText = card.syn ? 'Synonyms: ' + card.syn : '';
+  document.getElementById('syn').style.display = synShown && card.syn ? 'block' : 'none';
+  document.getElementById('showSynBtn').style.display = shown && card.syn ? 'inline-block' : 'none';
+  document.getElementById('showSynBtn').innerText = synShown ? 'Hide synonyms' : 'Show synonyms';
+  renderJumpBar();
+}
+function nextCard() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  idx = (idx + 1) % filtered.length;
+  shown = false; synShown = false;
+  showCard();
+}
+function prevCard() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  idx = (idx - 1 + filtered.length) % filtered.length;
+  shown = false; synShown = false;
+  showCard();
+}
+function randomCard() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  if(filtered.length < 2) return;
+  let r;
+  do { r = Math.floor(Math.random()*filtered.length); } while (r===idx);
+  idx = r;
+  shown = false; synShown = false;
+  showCard();
+}
+function toggleTranslation() {
+  shown = !shown;
+  synShown = false;
+  showCard();
+}
+function toggleSynonyms() {
+  synShown = !synShown;
+  showCard();
+}
+function selectCategory(cat) {
+  currentCat = cat;
+  filterCards();
+  renderCategoryBar();
+}
+function renderCategoryBar() {
+  document.getElementById('categoryBar').innerHTML = categories.map(c =>
+    `<button class="category-btn${currentCat===c.key?' active':''}" onclick="selectCategory('${c.key}')">${c.name}</button>`
+  ).join('');
+}
+function renderJumpBar() {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  let html = '';
+  if(filtered.length>18){
+    for(let i=0;i<filtered.length;i+=10){
+      html+=`<button class="jump-btn${idx>=i&&idx<i+10?' active':''}" onclick="jumpTo(${i})">${i+1}-${Math.min(i+10,filtered.length)}</button>`;
+    }
+  }
+  document.getElementById('jumpBar').innerHTML = html;
+}
+function jumpTo(n) {
+  let filtered = currentCat === 'All' ? cards : cards.filter(c => c.cat === currentCat);
+  idx = n;
+  shown = false; synShown = false;
+  showCard();
+}
+
+function toggleCheatsheet() {
+  const el = document.getElementById('cheatsheet');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+renderCategoryBar();
+filterCards();
+</script>
+</body>
+</html>
